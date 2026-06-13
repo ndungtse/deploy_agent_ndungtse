@@ -3,6 +3,22 @@
 # Where the source files live
 src_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+project=""
+archive=""
+
+# On Ctrl+C, bundle whatever was created so far and remove the partial workspace.
+cleanup() {
+    echo
+    echo "Cancelled. Cleaning up..."
+    if [ -n "$project" ] && [ -d "$project" ]; then
+        tar -czf "$archive" "$project"
+        rm -rf "$project"
+        echo "Saved progress to $archive and removed $project."
+        echo "Recover it later with: tar -xzf $archive"
+    fi
+    exit 1
+}
+
 build_structure() {
     mkdir -p "$project/Helpers" "$project/reports"
     cp "$src_dir/attendance_checker.py" "$project/attendance_checker.py"
@@ -46,6 +62,9 @@ configure_thresholds() {
 main() {
     read -p "Project name: " name
     project="attendance_tracker_${name}"
+    archive="attendance_tracker_${name}_archive.tar.gz"
+
+    trap cleanup INT
 
     build_structure
     configure_thresholds
