@@ -94,6 +94,23 @@ configure_thresholds() {
     echo "Thresholds set to warning $warning, failure $failure."
 }
 
+health_check() {
+    if python3 --version >/dev/null 2>&1; then
+        echo "OK: $(python3 --version)"
+    else
+        echo "Warning: python3 is not installed. The tracker needs it to run."
+    fi
+
+    if [ -f "$project/attendance_checker.py" ] && \
+       [ -f "$project/Helpers/config.json" ] && \
+       [ -f "$project/Helpers/assets.csv" ] && \
+       [ -f "$project/reports/reports.log" ]; then
+        echo "OK: project structure is in place."
+    else
+        echo "Warning: some expected files are missing."
+    fi
+}
+
 main() {
     read -p "Project name: " name
     project="attendance_tracker_${name}"
@@ -103,6 +120,7 @@ main() {
 
     prepare_workspace
     configure_thresholds
+    health_check
 
     echo "Done. Workspace ready at $project."
 }
